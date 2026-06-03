@@ -1,0 +1,34 @@
+﻿[
+    {
+        "id":  1,
+        "name":  "Alice Smith",
+        "email":  "alice@example.com",
+        "role":  "Admin",
+        "createdAt":  "2026-04-15T14:10:18.8074425+02:00",
+        "updatedAt":  "2026-04-15T14:10:18.8144401+02:00"
+    },
+    {
+        "id":  2,
+        "name":  "Bob Jones",
+        "email":  "bob@example.com",
+        "role":  "User",
+        "createdAt":  "2026-04-15T14:10:18.8320494+02:00",
+        "updatedAt":  "2026-04-15T14:10:18.8330493+02:00"
+    },
+    {
+        "id":  3,
+        "name":  "Carol White",
+        "email":  "carol@example.com",
+        "role":  "Editor",
+        "createdAt":  "2026-04-15T14:10:18.8333344+02:00",
+        "updatedAt":  "2026-04-15T14:10:18.8333344+02:00"
+    },
+    {
+        "id":  4,
+        "createdAt":  "2026-04-15T14:13:27.0930707+02:00",
+        "email":  "ptg76@ukr.net",
+        "name":  "Peter Petky",
+        "role":  "SuperAdmin",
+        "updatedAt":  "2026-04-15T14:51:31.1507761+02:00"
+    }
+]

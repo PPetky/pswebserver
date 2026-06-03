@@ -1,0 +1,25 @@
+{{> header}}
+
+<div class="page-header">
+  <h1>🗄️ All Tables</h1>
+  <a href="/create-table" class="btn btn-primary">＋ New Table</a>
+</div>
+
+{{#if tables}}
+  <div class="table-grid">
+    {{#each tables}}
+      <a class="table-card" href="/tables/{{this}}">
+        <div class="tc-name">🗃 {{this}}</div>
+        <div class="tc-count">View rows →</div>
+      </a>
+    {{/each}}
+  </div>
+{{else}}
+  <div class="empty">
+    <div class="empty-icon">📭</div>
+    <p>No tables found. Create one to start storing data.</p>
+    <a href="/create-table" class="btn btn-primary">Create Table</a>
+  </div>
+{{/if}}
+
+{{> footer}}

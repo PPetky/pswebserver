@@ -1,0 +1,29 @@
+﻿[
+    {
+        "id":  1,
+        "name":  "Widget A",
+        "price":  "9.99",
+        "stock":  "100",
+        "category":  "Widgets",
+        "createdAt":  "2026-04-15T14:10:18.9206604+02:00",
+        "updatedAt":  "2026-04-15T14:10:18.9206604+02:00"
+    },
+    {
+        "id":  2,
+        "name":  "Gadget B",
+        "price":  "24.99",
+        "stock":  "45",
+        "category":  "Gadgets",
+        "createdAt":  "2026-04-15T14:10:18.9206604+02:00",
+        "updatedAt":  "2026-04-15T14:10:18.9216437+02:00"
+    },
+    {
+        "id":  3,
+        "name":  "Doohickey",
+        "price":  "4.50",
+        "stock":  "200",
+        "category":  "Other",
+        "createdAt":  "2026-04-15T14:10:18.9216437+02:00",
+        "updatedAt":  "2026-04-15T14:10:18.9216437+02:00"
+    }
+]

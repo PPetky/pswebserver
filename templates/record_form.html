@@ -1,0 +1,108 @@
+{{> header}}
+
+<div class="page-header">
+  <div>
+    <div class="text-muted" style="font-size:.8rem;margin-bottom:.25rem">
+      <a href="/tables">Tables</a> /
+      <a href="/tables/{{table}}">{{table}}</a> /
+    </div>
+    <h1>{{action}} Record</h1>
+  </div>
+  <a href="/tables/{{table}}" class="btn btn-ghost">← Back</a>
+</div>
+
+<div class="card" style="max-width:580px">
+
+  {{#if isNew}}
+    <form method="POST" action="/tables/{{table}}/new">
+
+      {{#if hasColumns}}
+        {{#each fieldRows}}
+          <div class="form-group">
+            <label for="f_{{name}}">{{name}}</label>
+            <input type="text" id="f_{{name}}" name="{{name}}"
+                   value="{{value}}" placeholder="Enter value..." />
+          </div>
+        {{/each}}
+      {{else}}
+        <div class="alert alert-info">
+          ℹ️ This table has no existing columns yet.
+          Use <strong>Add Field</strong> to define fields for the first row.
+        </div>
+        <div id="dynamic-fields"></div>
+        <button type="button" class="btn btn-ghost btn-sm mb-4" onclick="addField()">
+          ＋ Add Field
+        </button>
+      {{/if}}
+
+  {{else}}
+    <form method="POST" action="/tables/{{table}}/{{id}}/edit">
+
+      {{#each fieldRows}}
+        <div class="form-group">
+          <label for="f_{{name}}">{{name}}</label>
+          <input type="text" id="f_{{name}}" name="{{name}}"
+                 value="{{value}}" placeholder="Enter value..." />
+        </div>
+      {{/each}}
+
+  {{/if}}
+
+    <div style="display:flex;gap:.75rem;margin-top:1.5rem">
+      <button type="submit" class="btn btn-primary">💾 {{action}}</button>
+      <a href="/tables/{{table}}" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+
+{{#if isNew}}
+<script>
+  var fieldCount = 0;
+  function addField() {
+    fieldCount++;
+    var container = document.getElementById('dynamic-fields');
+    var div = document.createElement('div');
+    div.className = 'form-group';
+    div.style.cssText = 'display:flex;gap:.5rem;align-items:flex-end';
+
+    var nameWrap = document.createElement('div');
+    nameWrap.style.flex = '1';
+    var nLabel = document.createElement('label');
+    nLabel.textContent = 'Field Name';
+    var nInput = document.createElement('input');
+    nInput.type = 'text';
+    nInput.placeholder = 'field_name';
+    nInput.addEventListener('input', function() {
+      var sanitized = this.value.replace(/[^a-zA-Z0-9_]/g,'_');
+      vInput.name = sanitized || ('field_' + fieldCount);
+    });
+    nameWrap.appendChild(nLabel);
+    nameWrap.appendChild(nInput);
+
+    var valWrap = document.createElement('div');
+    valWrap.style.flex = '2';
+    var vLabel = document.createElement('label');
+    vLabel.textContent = 'Value';
+    var vInput = document.createElement('input');
+    vInput.type = 'text';
+    vInput.name = 'field_' + fieldCount;
+    vInput.placeholder = 'value';
+    valWrap.appendChild(vLabel);
+    valWrap.appendChild(vInput);
+
+    var rm = document.createElement('button');
+    rm.type = 'button';
+    rm.textContent = '✕';
+    rm.className = 'btn btn-danger btn-sm';
+    rm.addEventListener('click', function() { container.removeChild(div); });
+
+    div.appendChild(nameWrap);
+    div.appendChild(valWrap);
+    div.appendChild(rm);
+    container.appendChild(div);
+    nInput.focus();
+  }
+</script>
+{{/if}}
+
+{{> footer}}

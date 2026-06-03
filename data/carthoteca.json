@@ -1,0 +1,53 @@
+﻿[
+    {
+        "id":  1,
+        "createdAt":  "2026-04-16T15:08:25.1718612+02:00",
+        "passport_data":  "AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA9NkxM/GrgUCx7Q0+COe5XgAAAAACAAAAAAAQZgAAAAEAACAAAABkTudVM+PJ9+sKrOVE4pawgAOEYSs02J1nrtBvS4733QAAAAAOgAAAAAIAACAAAAAJNh0mvLZo1PiUcpYPdL/ENzsuVrFvjH7fqSee3e3PQBAAAABeMWAAut7tsA174ljqt0PNQAAAAAKfvDuWA+ceKUdGvNT3PjH7kpxqN3DqqViB+tCTqCJLAibbP2Ey6Rodqvt8xEjB3SYrTzlWvUXqg0CGnIbOCNE=",
+        "real_name":  "AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA9NkxM/GrgUCx7Q0+COe5XgAAAAACAAAAAAAQZgAAAAEAACAAAADzoIrCi13K1hJ6F6ISqGKdTiY8UWxqLo8ByYAC2sbe4gAAAAAOgAAAAAIAACAAAADDT8swv4Yn4BJ8R2kY0NBmEtqwZqnn74/FkhSlmVPfgiAAAAB1x9vVpmMo/aVcpZy7iTTsmzc0sbX2lovrhFnsGlNNa0AAAAAwMcp488T4fv6o5+RHUD4PMzl3H8rQ6tsYaw1VikAyJWdnA/RgzLTxWqTl945lfzW2xIwBG7yq0eTD0RyEp/1k",
+        "effective_id":  "1",
+        "birth_place":  "м. Ужгород",
+        "clearance_form":  "-",
+        "scanned_original":  "",
+        "residence_address":  "AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA9NkxM/GrgUCx7Q0+COe5XgAAAAACAAAAAAAQZgAAAAEAACAAAAATSeb7bGmFpaRaPOThAY6V2J+jyWzxFz9JvdtDQdOh2QAAAAAOgAAAAAIAACAAAAB/0LB0cjmrGMx/537MKdr4XIZw3V6yn+CR36vc+WfZLUAAAADjXOCRUIrn9ar5QrwAz9/KdG3BiZ/k8JeJao6YMpzAl7Fi79ljvVCMyryqUCmT1mUYg6pLexNmiy+9wHvYwce6QAAAAEGbNghH2BKBQgjUlTzq1ce8hXQENauv9dO4Ax6oKI3jusO5NdsVEJgflMwqVlybRwyO83UyqikpBa4fs/Fc6w8=",
+        "birth_date":  "12.12.1970",
+        "clearance_type":  "-",
+        "status":  "1",
+        "registration_place":  "2",
+        "photo":  "3",
+        "updatedAt":  "2026-04-16T15:16:54.3576371+02:00"
+    },
+    {
+        "registration_place":  "",
+        "id":  2,
+        "photo":  "",
+        "scanned_original":  "",
+        "birth_place":  "Тімбукту",
+        "clearance_form":  "",
+        "real_name":  "AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA9NkxM/GrgUCx7Q0+COe5XgAAAAACAAAAAAAQZgAAAAEAACAAAADqatyc19FH9f1ZMxIyh6apWd80pDu/E6zTAfevOw1AaQAAAAAOgAAAAAIAACAAAAAqwhw78ApbFQ5Z/ERT5KgkBlFCqalCOQs+5V5KcNzURiAAAADFAEsyq/scqMnytEJIc0q2UuS/BcvLSSvhRtz+8d13+EAAAAA1eJjiCJ/cSESQlDMbiDP3AQILE2BrHB9fnGRFQrI4VEdag7mxU94GZ3ubMsc+AJcZOvJZdk0eDa4NmcGx+8iA",
+        "residence_address":  "AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA9NkxM/GrgUCx7Q0+COe5XgAAAAACAAAAAAAQZgAAAAEAACAAAACUvG9k8BZqLJd8fqYU2E3gwVfNwaR1Ncmm+2VhgCxVfgAAAAAOgAAAAAIAACAAAAAIeIiSZ/qBdTUQEXevd3L84dpVA3hQL9B4mMSZY+pB+BAAAABkuUtjQXswxRGuG7y7DRNOQAAAAMmoJt5jvoHzp3KaWxaqE9lEedjFvFshtvUigO6qEVuWrhmniQSwJcPZzfk74xLgbQjTq8ZrMxpyVKVomYJ9CdE=",
+        "effective_id":  "",
+        "clearance_type":  "",
+        "createdAt":  "2026-06-03T13:24:16.8781040+02:00",
+        "updatedAt":  "2026-06-03T13:24:16.8781040+02:00",
+        "birth_date":  "",
+        "status":  "",
+        "passport_data":  "AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA9NkxM/GrgUCx7Q0+COe5XgAAAAACAAAAAAAQZgAAAAEAACAAAADxz4JgS2tqPXXaM7AMyVhZ0sHEGzciq/DOdLIaiy6WGAAAAAAOgAAAAAIAACAAAACkYhUgAy7ibMIpR0N4xUabnTtL16zgC41C6MZ/tYHT1hAAAABa6X+vhZ5//EHkx3KX4SBjQAAAAJKRSno/5qnu1KwTSm39wOTKGGsXlmni9jljpcV1IhB0fC1zmD+D9P8lTuD8K6V8ZtQCkMlxRMvW9rw9bz7Ook8="
+    },
+    {
+        "registration_place":  "fffff",
+        "id":  3,
+        "photo":  "",
+        "scanned_original":  "",
+        "birth_place":  "sss",
+        "clearance_form":  "",
+        "real_name":  "AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA9NkxM/GrgUCx7Q0+COe5XgAAAAACAAAAAAAQZgAAAAEAACAAAAB78H+BqjS3fOilYz5MIO+FckzTZdrS7Vmc376evi+hZgAAAAAOgAAAAAIAACAAAAAYJMQi4CiOWXBf2iQC821ZX8p36Avr7SsUpYAoE/NI0xAAAADHBNUeVMh0x6VteCZSVLEMQAAAAFMkmFbsCo0+Z8ygzGhpMcLQBeLzBxrg9uJO8/XNA8GUYaTaAqrBsw5eAl7Hb+kdY48j3OzMIE6kw5cQep28Ndc=",
+        "residence_address":  "AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA9NkxM/GrgUCx7Q0+COe5XgAAAAACAAAAAAAQZgAAAAEAACAAAADdbBgKnb4W+UIStCiIbZdyZi2a0HvlKt5NYEEF/buQSgAAAAAOgAAAAAIAACAAAAAemLRz3BXJUCW864Vk2wdR3He6IirphORV1+yxhCIkkBAAAADgSAIsKTwtxm4iImBL6T6WQAAAAFJBh69Gzru3WJZdFj2dmfWmZKxqON4QfCK+OkAA1qAfuKxDzonQ9+WQlNFI7cmWWiHiM0/2Da4LqVLTtrUmWSk=",
+        "effective_id":  "",
+        "clearance_type":  "",
+        "createdAt":  "2026-06-03T13:31:47.4167629+02:00",
+        "updatedAt":  "2026-06-03T13:31:47.4177625+02:00",
+        "birth_date":  "",
+        "status":  "",
+        "passport_data":  "AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA9NkxM/GrgUCx7Q0+COe5XgAAAAACAAAAAAAQZgAAAAEAACAAAAAu+zIoTZ55TzS6evIwDJoS9ch/yPhW5MSIPWOCfcDt8gAAAAAOgAAAAAIAACAAAACwA6+IgZGAGNT3dA0cIxoCD3Ea219HzbmTRkMJncmRqhAAAADkHAsnDCVEbJQtRgLRxDc1QAAAAEcV3m+AkQQqagW8cnbKZag87XJml8N/hBqm2Sl+R9NAnZO+sXH1wpYYOorPlF74lGtUWVuy30eAod4Tp4/+LiE="
+    }
+]

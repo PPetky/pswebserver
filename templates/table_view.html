@@ -1,0 +1,60 @@
+{{> header}}
+
+<div class="page-header">
+  <div>
+    <div class="text-muted" style="font-size:.8rem;margin-bottom:.25rem">
+      <a href="/tables">Tables</a> /
+    </div>
+    <h1>🗃 {{table}}</h1>
+  </div>
+  <div class="flex gap-2">
+    <a href="/tables/{{table}}/new" class="btn btn-success">＋ Add Row</a>
+  </div>
+</div>
+
+<div class="flex gap-2 mb-4" style="align-items:center">
+  <span class="badge badge-blue">{{rowCount}} rows</span>
+  <span class="text-muted" style="font-size:.8rem">API: <code>/api/{{table}}</code></span>
+</div>
+
+{{#if hasRows}}
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          {{#each columns}}
+            <th>{{this}}</th>
+          {{/each}}
+          <th style="text-align:right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each rows}}
+          <tr>
+            {{#each cells}}
+              <td>{{this}}</td>
+            {{/each}}
+            <td style="text-align:right;white-space:nowrap">
+              <a href="/tables/{{table}}/{{id}}/edit" class="btn btn-ghost btn-sm">✏️ Edit</a>
+              <form method="POST" action="/tables/{{table}}"
+                    style="display:inline"
+                    onsubmit="return confirm('Delete row #{{id}}?')">
+                <input type="hidden" name="_action" value="delete" />
+                <input type="hidden" name="id" value="{{id}}" />
+                <button type="submit" class="btn btn-danger btn-sm">🗑 Delete</button>
+              </form>
+            </td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+{{else}}
+  <div class="empty">
+    <div class="empty-icon">📭</div>
+    <p>This table is empty.</p>
+    <a href="/tables/{{table}}/new" class="btn btn-success">Add First Row</a>
+  </div>
+{{/if}}
+
+{{> footer}}

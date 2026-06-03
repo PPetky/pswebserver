@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{title}} — PS WebServer</title>
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0d1117;
+      --surface:  #161b22;
+      --surface2: #21262d;
+      --border:   #30363d;
+      --accent:   #58a6ff;
+      --accent2:  #3fb950;
+      --danger:   #f85149;
+      --warn:     #d29922;
+      --text:     #e6edf3;
+      --muted:    #8b949e;
+      --radius:   8px;
+      --font:     'Segoe UI', 'SF Pro Text', system-ui, sans-serif;
+      --mono:     'Cascadia Code', 'Consolas', monospace;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Nav ──────────────────────────────────────────────── */
+    nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      height: 56px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-brand {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      letter-spacing: -.5px;
+    }
+    .nav-brand span { color: var(--accent); }
+    .nav-links { display: flex; gap: .25rem; margin-left: auto; }
+    .nav-links a {
+      padding: .375rem .75rem;
+      border-radius: var(--radius);
+      font-size: .875rem;
+      color: var(--muted);
+      transition: background .15s, color .15s;
+    }
+    .nav-links a:hover, .nav-links a.active {
+      background: var(--surface2);
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    /* ── Main ─────────────────────────────────────────────── */
+    main {
+      flex: 1;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* ── Page header ─────────────────────────────────────── */
+    .page-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 1.75rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .page-header h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -.5px;
+    }
+
+    /* ── Cards ───────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+    }
+
+    /* ── Stat grid ───────────────────────────────────────── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+    }
+    .stat-card .label { font-size: .75rem; text-transform: uppercase;
+                         letter-spacing: .08em; color: var(--muted); margin-bottom: .5rem; }
+    .stat-card .value { font-size: 2rem; font-weight: 700; letter-spacing: -1px; }
+    .stat-card .value.accent  { color: var(--accent); }
+    .stat-card .value.green   { color: var(--accent2); }
+
+    /* ── Table ───────────────────────────────────────────── */
+    .tbl-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+    thead { background: var(--surface2); }
+    th { padding: .625rem 1rem; text-align: left; font-weight: 600;
+         font-size: .75rem; text-transform: uppercase; letter-spacing: .06em;
+         color: var(--muted); border-bottom: 1px solid var(--border); white-space: nowrap; }
+    td { padding: .625rem 1rem; border-bottom: 1px solid var(--border); max-width: 300px;
+         overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: var(--surface2); }
+    td.mono { font-family: var(--mono); font-size: .8rem; color: var(--muted); }
+    td.id   { font-family: var(--mono); font-size: .8rem; color: var(--accent); font-weight: 600; }
+
+    /* ── Buttons ─────────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .45rem .9rem; border-radius: var(--radius);
+      font-size: .875rem; font-weight: 500; cursor: pointer;
+      border: 1px solid transparent; transition: all .15s; white-space: nowrap;
+    }
+    .btn-primary  { background: var(--accent); color: #000; }
+    .btn-primary:hover { background: #79b8ff; text-decoration: none; }
+    .btn-success  { background: var(--accent2); color: #000; }
+    .btn-success:hover { background: #56d364; text-decoration: none; }
+    .btn-danger   { background: transparent; color: var(--danger);
+                    border-color: var(--danger); }
+    .btn-danger:hover { background: var(--danger); color: #fff; text-decoration: none; }
+    .btn-ghost    { background: var(--surface2); color: var(--text); border-color: var(--border); }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+    .btn-sm { padding: .3rem .65rem; font-size: .8rem; }
+
+    /* ── Forms ───────────────────────────────────────────── */
+    .form-group { margin-bottom: 1rem; }
+    label { display: block; font-size: .85rem; font-weight: 500;
+            color: var(--muted); margin-bottom: .35rem; }
+    input[type=text], input[type=email], input[type=number],
+    input[type=password], textarea, select {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: .55rem .75rem;
+      color: var(--text); font-family: var(--font); font-size: .9rem;
+      transition: border-color .15s;
+    }
+    input:focus, textarea:focus, select:focus {
+      outline: none; border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(88,166,255,.15);
+    }
+    textarea { resize: vertical; min-height: 80px; }
+
+    /* ── Badges ──────────────────────────────────────────── */
+    .badge {
+      display: inline-block; padding: .2em .55em; border-radius: 99px;
+      font-size: .72rem; font-weight: 600; letter-spacing: .03em;
+    }
+    .badge-blue  { background: rgba(88,166,255,.15); color: var(--accent); }
+    .badge-green { background: rgba(63,185,80,.15);  color: var(--accent2); }
+
+    /* ── Table cards (index) ─────────────────────────────── */
+    .table-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+    .table-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      transition: border-color .15s, transform .1s;
+      text-decoration: none;
+      display: block;
+    }
+    .table-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      text-decoration: none;
+    }
+    .table-card .tc-name  { font-weight: 600; font-size: 1rem; margin-bottom: .25rem; }
+    .table-card .tc-count { font-size: .8rem; color: var(--muted); }
+
+    /* ── Empty state ─────────────────────────────────────── */
+    .empty {
+      text-align: center; padding: 3rem 1rem; color: var(--muted);
+    }
+    .empty .empty-icon { font-size: 2.5rem; margin-bottom: .75rem; opacity: .5; }
+    .empty p { margin-bottom: 1rem; }
+
+    /* ── Alert ───────────────────────────────────────────── */
+    .alert {
+      padding: .75rem 1rem; border-radius: var(--radius);
+      margin-bottom: 1.25rem; font-size: .875rem;
+    }
+    .alert-info  { background: rgba(88,166,255,.1); border: 1px solid rgba(88,166,255,.3); color: var(--accent); }
+    .alert-error { background: rgba(248,81,73,.1);  border: 1px solid rgba(248,81,73,.3);  color: var(--danger); }
+
+    /* ── Footer ──────────────────────────────────────────── */
+    footer {
+      text-align: center; padding: 1rem; font-size: .75rem;
+      color: var(--muted); border-top: 1px solid var(--border);
+    }
+
+    /* ── Section title ───────────────────────────────────── */
+    .section-title {
+      font-size: .75rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .1em; color: var(--muted); margin-bottom: .75rem;
+    }
+
+    /* ── Misc ────────────────────────────────────────────── */
+    .flex { display: flex; }
+    .gap-2 { gap: .5rem; }
+    .mt-1 { margin-top: .25rem; }
+    .mb-1 { margin-bottom: .25rem; }
+    .mb-2 { margin-bottom: .5rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .text-muted { color: var(--muted); }
+    .text-danger { color: var(--danger); }
+    .font-mono { font-family: var(--mono); }
+    code {
+      font-family: var(--mono); font-size: .85em;
+      background: var(--surface2); padding: .1em .4em;
+      border-radius: 4px; color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    ⚡ <span>PS</span>WebServer
+  </div>
+  <div class="nav-links">
+    <a href="/">Dashboard</a>
+    <a href="/tables">Tables</a>
+    <a href="/create-table">＋ New Table</a>
+  </div>
+</nav>
+
+<main>

@@ -1,0 +1,62 @@
+{{> header}}
+
+<div class="page-header">
+  <h1>📊 Dashboard</h1>
+  <a href="/create-table" class="btn btn-primary">＋ New Table</a>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="label">Tables</div>
+    <div class="value accent">{{tableCount}}</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Total Rows</div>
+    <div class="value green">{{rowTotal}}</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Storage</div>
+    <div class="value" style="font-size:1.1rem;padding-top:.6rem;color:var(--muted)">./data/*.json</div>
+  </div>
+</div>
+
+{{#if hasTables}}
+  <p class="section-title">Your Tables</p>
+  <div class="table-grid">
+    {{#each tables}}
+      <a class="table-card" href="/tables/{{name}}">
+        <div class="tc-name">🗃 {{name}}</div>
+        <div class="tc-count">{{count}} rows</div>
+      </a>
+    {{/each}}
+  </div>
+{{else}}
+  <div class="empty">
+    <div class="empty-icon">🗄️</div>
+    <p>No tables yet. Create your first table to get started.</p>
+    <a href="/create-table" class="btn btn-primary">Create a Table</a>
+  </div>
+{{/if}}
+
+<div class="card" style="margin-top:2rem">
+  <p class="section-title">REST API Quick Reference</p>
+  <table style="font-size:.82rem">
+    <thead>
+      <tr>
+        <th>Method</th><th>URL</th><th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="badge badge-green">GET</span></td>    <td><code>/api/{table}</code></td>        <td>List all rows</td></tr>
+      <tr><td><span class="badge badge-green">GET</span></td>    <td><code>/api/{table}?field=val</code></td><td>Filter rows</td></tr>
+      <tr><td><span class="badge badge-green">GET</span></td>    <td><code>/api/{table}/{id}</code></td>   <td>Get single row</td></tr>
+      <tr><td><span class="badge badge-blue">POST</span></td>    <td><code>/api/{table}</code></td>        <td>Create row (JSON body)</td></tr>
+      <tr><td><span class="badge" style="background:rgba(210,153,34,.15);color:var(--warn)">PUT</span></td>     <td><code>/api/{table}/{id}</code></td>   <td>Replace row</td></tr>
+      <tr><td><span class="badge" style="background:rgba(210,153,34,.15);color:var(--warn)">PATCH</span></td>   <td><code>/api/{table}/{id}</code></td>   <td>Update fields</td></tr>
+      <tr><td><span class="badge" style="background:rgba(248,81,73,.15);color:var(--danger)">DELETE</span></td> <td><code>/api/{table}/{id}</code></td>   <td>Delete row</td></tr>
+      <tr><td><span class="badge badge-green">GET</span></td>    <td><code>/api</code></td>                <td>List all tables</td></tr>
+    </tbody>
+  </table>
+</div>
+
+{{> footer}}
