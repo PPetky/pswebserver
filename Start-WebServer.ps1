@@ -73,7 +73,7 @@ function Get-MimeType([string]$ext) {
 
 # Configuration: Protected fields per table (will be encrypted/decrypted automatically)
 $ProtectedFields = @{
-    "users"      = @("passport_data", "real_name", "residence_address", "registration_place", "birth_place")
+    "users"      = @("name", "email", "role", "key")
     "carthoteca" = @("passport_data", "real_name", "residence_address", "registration_place", "birth_place")
     # Add more tables and fields as needed
 }
