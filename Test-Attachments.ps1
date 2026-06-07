@@ -68,7 +68,8 @@ if (Test-Path $attachmentsJson) {
     Write-Host ""
     
     foreach ($att in $attachments) {
-        $desc = "$($att.content_type) - parent: $($att.parent)"
+        $table = if ($att.content) { " - table: $($att.content)" } else { "" }
+        $desc = "$($att.content_type) - parent: $($att.parent)$table"
         Test-Attachment -Id $att.id -Description $desc
     }
 } else {

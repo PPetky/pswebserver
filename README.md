@@ -226,12 +226,21 @@ Invoke-RestMethod "http://localhost:8080/api/attachments/1"
   "parent": 22,
   "file_name": "document.pdf",
   "content_type": "application/pdf",
-  "content": "",
+  "content": "carthoteca",
   "creator": "1",
   "createdAt": "2026-06-07T21:10:23Z",
   "updatedAt": "2026-06-07T21:10:23Z"
 }
 ```
+
+**Fields:**
+- `id` - Unique attachment ID
+- `parent` - Parent record ID (which row in the table)
+- `file_name` - Encrypted filename (decrypted when read)
+- `content_type` - MIME type
+- `content` - **Table name** (e.g., "carthoteca", "users")
+- `creator` - Optional creator identifier
+- `createdAt` / `updatedAt` - Timestamps
 
 ### Supported Content Types
 
@@ -255,6 +264,16 @@ This will:
 - Test existing attachments from `attachments.json`
 - Create a sample test file
 - Display usage examples
+
+**Add attachments using the helper script:**
+
+```powershell
+# Add attachment with table name
+.\Add-Attachment.ps1 -FilePath "C:\Documents\report.pdf" -Parent 22 -Table "carthoteca"
+
+# Add with creator
+.\Add-Attachment.ps1 -FilePath ".\image.jpg" -Parent 5 -Table "products" -Creator "user1"
+```
 
 ---
 

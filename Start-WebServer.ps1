@@ -839,6 +839,20 @@ function Handle-PageRoute {
             # Attachments list and viewer
             $attachments = @(Read-Table "attachments")
             
+            # Filter by parent if specified
+            $parentFilter = $Request.QueryString["parent"]
+            $isFiltered = $false
+            if (-not [string]::IsNullOrWhiteSpace($parentFilter)) {
+                $filtered = @()
+                foreach ($att in $attachments) {
+                    if ($att.parent -eq $parentFilter) {
+                        $filtered += $att
+                    }
+                }
+                $attachments = $filtered
+                $isFiltered = $true
+            }
+            
             # Add type indicators for icons
             $enriched = @()
             foreach ($att in $attachments) {
@@ -866,11 +880,14 @@ function Handle-PageRoute {
                 $enriched += $obj
             }
             
+            $pageTitle = if ($isFiltered) { "Attachments for Record #$parentFilter" } else { "Attachments" }
             $html = Invoke-Template "attachments_view.html" @{
-                title           = "Attachments"
+                title           = $pageTitle
                 attachments     = $enriched
                 hasAttachments  = ($attachments.Count -gt 0)
                 count           = $attachments.Count
+                isFiltered      = $isFiltered
+                parentFilter    = $parentFilter
             }
             Send-Html $Response 200 $html
             return
@@ -1082,7 +1099,7 @@ function Handle-PageRoute {
                     content_type = $contentType
                     parent       = [string]$parentId
                     creator      = $creator
-                    content      = ""
+                    content      = $table
                 }
                 
                 $newAttachment = New-Row "attachments" $attachmentFields

@@ -11,12 +11,14 @@
     Parent record ID (optional)
 .PARAMETER Creator
     Creator identifier (optional)
+.PARAMETER Table
+    Table name to store in content field (optional, e.g., "carthoteca")
 .PARAMETER ServerUrl
     Base URL of the web server (default: http://localhost:8080)
 .EXAMPLE
-    .\Add-Attachment.ps1 -FilePath "C:\Documents\report.pdf" -Parent 22
+    .\Add-Attachment.ps1 -FilePath "C:\Documents\report.pdf" -Parent 22 -Table "carthoteca"
 .EXAMPLE
-    .\Add-Attachment.ps1 -FilePath ".\image.jpg" -Creator "user1"
+    .\Add-Attachment.ps1 -FilePath ".\image.jpg" -Creator "user1" -Table "products"
 #>
 
 param(
@@ -25,6 +27,7 @@ param(
     
     [string]$Parent = "",
     [string]$Creator = "",
+    [string]$Table = "",
     [string]$ServerUrl = "http://localhost:8080"
 )
 
@@ -85,6 +88,7 @@ Write-Host "  Size         : $($file.Length) bytes" -ForegroundColor Gray
 Write-Host "  Content Type : $contentType" -ForegroundColor Gray
 Write-Host "  Parent       : $(if ($Parent) { $Parent } else { '(none)' })" -ForegroundColor Gray
 Write-Host "  Creator      : $(if ($Creator) { $Creator } else { '(none)' })" -ForegroundColor Gray
+Write-Host "  Table        : $(if ($Table) { $Table } else { '(none)' })" -ForegroundColor Gray
 Write-Host ""
 
 # Copy file to attachments directory
@@ -119,7 +123,7 @@ $body = @{
     content_type = $contentType
     parent       = $Parent
     creator      = $Creator
-    content      = ""
+    content      = $Table
 } | ConvertTo-Json
 
 try {

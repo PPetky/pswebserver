@@ -188,7 +188,14 @@
         <a href="/tables" class="back-link">← Back to Tables</a>
         
         <h1>📎 Attachments</h1>
+        {{#if isFiltered}}
+        <p class="subtitle">
+            Showing attachments linked to record #{{parentFilter}}
+            <a href="/attachments" style="color: #667eea; margin-left: 1rem;">→ Show all attachments</a>
+        </p>
+        {{else}}
         <p class="subtitle">View and download attached files</p>
+        {{/if}}
         
         <div class="stats">
             <div class="stat-card">
@@ -221,6 +228,7 @@
                 
                 <div class="attachment-meta">
                     {{#if parent}}<div>📌 Parent: {{parent}}</div>{{/if}}
+                    {{#if content}}<div>📁 Table: {{content}}</div>{{/if}}
                     {{#if creator}}<div>👤 Creator: {{creator}}</div>{{/if}}
                     <div>📅 Created: {{createdAt}}</div>
                 </div>
@@ -242,8 +250,14 @@
         {{else}}
         <div class="empty-state">
             <div class="empty-state-icon">📎</div>
+            {{#if isFiltered}}
+            <h2>No Attachments for This Record</h2>
+            <p>Record #{{parentFilter}} has no attached files yet.</p>
+            <a href="/attachments" class="btn btn-primary" style="margin-top: 1rem;">View All Attachments</a>
+            {{else}}
             <h2>No Attachments Found</h2>
             <p>Create attachment records via the API or upload files to get started.</p>
+            {{/if}}
         </div>
         {{/if}}
     </div>
