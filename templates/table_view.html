@@ -35,13 +35,45 @@
               <td>{{this}}</td>
             {{/each}}
             <td style="text-align:right;white-space:nowrap">
+              {{#if hasAttachments}}
+                <span class="badge badge-blue" style="margin-right:0.5rem" title="{{attachmentCount}} attachment(s)">
+                  📎 {{attachmentCount}}
+                </span>
+              {{/if}}
               <a href="/tables/{{table}}/{{id}}/edit" class="btn btn-ghost btn-sm">✏️ Edit</a>
+              <button onclick="toggleUpload({{id}})" class="btn btn-ghost btn-sm" title="Attach file">📎 Attach</button>
               <form method="POST" action="/tables/{{table}}"
                     style="display:inline"
                     onsubmit="return confirm('Delete row #{{id}}?')">
                 <input type="hidden" name="_action" value="delete" />
                 <input type="hidden" name="id" value="{{id}}" />
                 <button type="submit" class="btn btn-danger btn-sm">🗑 Delete</button>
+              </form>
+            </td>
+          </tr>
+          <tr id="upload-row-{{id}}" style="display:none">
+            <td colspan="100%" style="background:var(--surface2);padding:1rem">
+              <form method="POST" action="/tables/{{table}}/{{id}}/attach" enctype="multipart/form-data" style="max-width:600px">
+                <div style="display:flex;gap:1rem;align-items:end">
+                  <div style="flex:1">
+                    <label style="display:block;margin-bottom:0.5rem;font-weight:500">
+                      📎 Upload File for Record #{{id}}
+                    </label>
+                    <input type="file" name="file" required 
+                           style="width:100%;padding:0.5rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text)">
+                  </div>
+                  <div>
+                    <button type="submit" class="btn btn-success">⬆️ Upload</button>
+                    <button type="button" onclick="toggleUpload({{id}})" class="btn btn-ghost">Cancel</button>
+                  </div>
+                </div>
+                {{#if hasAttachments}}
+                <div style="margin-top:0.75rem;padding:0.5rem;background:var(--surface);border-radius:4px;font-size:0.85rem">
+                  💡 This record has {{attachmentCount}} existing attachment(s). 
+                  <a href="/attachments" style="color:var(--accent)">View all attachments →</a>
+                </div>
+                {{/if}}
+                <input type="hidden" name="creator" value="">
               </form>
             </td>
           </tr>
@@ -56,5 +88,16 @@
     <a href="/tables/{{table}}/new" class="btn btn-success">Add First Row</a>
   </div>
 {{/if}}
+
+<script>
+function toggleUpload(id) {
+  const row = document.getElementById('upload-row-' + id);
+  if (row.style.display === 'none') {
+    row.style.display = 'table-row';
+  } else {
+    row.style.display = 'none';
+  }
+}
+</script>
 
 {{> footer}}

@@ -30,7 +30,9 @@ pswebserver/
 ├── Start-WebServer.ps1      ← Main server script
 ├── data/                    ← JSON table files (auto-created)
 │   ├── users.json
-│   └── products.json
+│   ├── products.json
+│   └── attachments.json     ← Attachment metadata
+├── attachments/             ← Uploaded attachment files
 ├── templates/               ← HTML templates
 │   ├── partials/
 │   │   ├── header.html      ← Shared nav/head
@@ -150,11 +152,152 @@ static/app.css   →  http://localhost:8080/static/app.css
 
 ---
 
+## Attachment Handling
+
+The server includes a secure attachment system with file encryption and download capabilities.
+
+### Web UI File Upload
+
+**Upload files directly from any table view:**
+
+1. Navigate to a table (e.g., `/tables/carthoteca`)
+2. Click the **📎 Attach** button next to any record
+3. Select a file and click **⬆️ Upload**
+4. File is automatically linked to the record via the `parent` field
+
+**Features:**
+- ✅ Inline upload forms for each row
+- ✅ Attachment count badges (📎 2)
+- ✅ Automatic filename deduplication
+- ✅ Content-type detection
+- ✅ Links files to parent records automatically
+
+### File Structure
+
+- **Metadata**: Stored in `data/attachments.json` with encrypted file names
+- **Files**: Stored in `attachments/` folder
+- **Encryption**: File names are encrypted using Windows DPAPI (Data Protection API)
+
+### Attachment Routes
+
+```
+GET /attachments/{id}            → View/download attachment by ID
+GET /attachments/{id}?download=1 → Force download (vs. inline display)
+```
+
+### API Endpoints
+
+```
+GET    /api/attachments          → List all attachments
+GET    /api/attachments/{id}     → Get attachment metadata
+POST   /api/attachments          → Create attachment record
+PUT    /api/attachments/{id}     → Update attachment metadata
+DELETE /api/attachments/{id}     → Delete attachment record (file remains)
+```
+
+### Usage Examples
+
+**View in Browser** (inline for images, PDFs, text):
+```powershell
+Start-Process "http://localhost:8080/attachments/1"
+```
+
+**Force Download**:
+```powershell
+Invoke-WebRequest -Uri "http://localhost:8080/attachments/1?download=1" `
+  -OutFile "myfile.pdf"
+```
+
+**List Attachments**:
+```powershell
+Invoke-RestMethod "http://localhost:8080/api/attachments"
+```
+
+**Get Attachment Metadata**:
+```powershell
+Invoke-RestMethod "http://localhost:8080/api/attachments/1"
+```
+
+### Attachment JSON Structure
+
+```json
+{
+  "id": 1,
+  "parent": 22,
+  "file_name": "document.pdf",
+  "content_type": "application/pdf",
+  "content": "",
+  "creator": "1",
+  "createdAt": "2026-06-07T21:10:23Z",
+  "updatedAt": "2026-06-07T21:10:23Z"
+}
+```
+
+### Supported Content Types
+
+The server automatically detects content types from file extensions:
+
+- **Images**: `.png`, `.jpg`, `.jpeg`, `.gif`, `.svg`, `.webp`, `.bmp`
+- **Documents**: `.pdf`, `.doc`, `.docx`, `.xls`, `.xlsx`, `.ppt`, `.pptx`
+- **Archives**: `.zip`, `.rar`, `.7z`
+- **Media**: `.mp3`, `.mp4`, `.avi`
+- **Text**: `.txt`, `.html`, `.css`, `.js`, `.json`
+
+### Testing
+
+Use the included test script:
+
+```powershell
+.\Test-Attachments.ps1
+```
+
+This will:
+- Test existing attachments from `attachments.json`
+- Create a sample test file
+- Display usage examples
+
+---
+
 ## Requirements
 
 - **PowerShell 5.1+** (built into Windows 10/11)
 - **Windows**: May need to run as Administrator for non-localhost binding
 - **No internet connection required** — fully self-contained
+
+---
+
+## Data Security & Encryption
+
+### Protected Fields
+
+The server uses **Windows Data Protection API (DPAPI)** to encrypt sensitive fields at rest.
+
+Protected fields are configured per table in `$ProtectedFields`:
+
+```powershell
+$ProtectedFields = @{
+    "users"       = @("name", "email", "role", "key")
+    "carthoteca"  = @("passport_data", "real_name", "residence_address")
+    "attachments" = @("file_name")
+}
+```
+
+- **Automatic Encryption**: When writing to JSON files, protected fields are encrypted
+- **Automatic Decryption**: When reading from JSON files, protected fields are decrypted
+- **User-Scoped**: Encrypted data can only be decrypted by the same Windows user account
+- **Transparent**: API consumers always see decrypted values
+
+### How It Works
+
+1. **On Write**: `Write-Table` encrypts protected fields before saving to JSON
+2. **On Read**: `Read-Table` decrypts protected fields after loading from JSON
+3. **API Access**: All API endpoints work with decrypted values transparently
+
+### Security Considerations
+
+- DPAPI encryption is **user-scoped** — data can only be decrypted by the same Windows user
+- If you move JSON files to another user/computer, protected fields cannot be decrypted
+- For production use, consider additional authentication/authorization layers
 
 ---
 

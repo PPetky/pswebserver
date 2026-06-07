@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        .back-link {
+            display: inline-block;
+            color: #667eea;
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .attachments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .attachment-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+        .attachment-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .attachment-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .attachment-icon {
+            width: 48px;
+            height: 48px;
+            background: #667eea;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        .attachment-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .attachment-id {
+            font-size: 0.85em;
+            color: #999;
+            font-weight: 500;
+        }
+        .attachment-type {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 2px;
+        }
+        .attachment-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            word-break: break-all;
+            font-size: 0.95em;
+        }
+        .attachment-meta {
+            font-size: 0.85em;
+            color: #777;
+            margin-bottom: 15px;
+        }
+        .attachment-meta div {
+            margin-bottom: 4px;
+        }
+        .attachment-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-block;
+            text-align: center;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #059669;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+        .empty-state h2 {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 200px;
+        }
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    {{> header}}
+    
+    <div class="container">
+        <a href="/tables" class="back-link">← Back to Tables</a>
+        
+        <h1>📎 Attachments</h1>
+        <p class="subtitle">View and download attached files</p>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value">{{count}}</div>
+                <div class="stat-label">Total Attachments</div>
+            </div>
+        </div>
+
+        {{#if hasAttachments}}
+        <div class="attachments-grid">
+            {{#each attachments}}
+            <div class="attachment-card">
+                <div class="attachment-header">
+                    <div class="attachment-icon">
+                        {{#if isImage}}🖼️{{/if}}
+                        {{#if isPdf}}📄{{/if}}
+                        {{#if isDoc}}📝{{/if}}
+                        {{#if isArchive}}🗜️{{/if}}
+                        {{#if isVideo}}🎬{{/if}}
+                        {{#if isAudio}}🎵{{/if}}
+                        {{#if isOther}}📎{{/if}}
+                    </div>
+                    <div class="attachment-info">
+                        <div class="attachment-id">ID: {{id}}</div>
+                        <div class="attachment-type">{{content_type}}</div>
+                    </div>
+                </div>
+                
+                <div class="attachment-name">{{file_name}}</div>
+                
+                <div class="attachment-meta">
+                    {{#if parent}}<div>📌 Parent: {{parent}}</div>{{/if}}
+                    {{#if creator}}<div>👤 Creator: {{creator}}</div>{{/if}}
+                    <div>📅 Created: {{createdAt}}</div>
+                </div>
+                
+                <div class="attachment-actions">
+                    <a href="/attachments/{{id}}" class="btn btn-primary" target="_blank">
+                        👁️ View
+                    </a>
+                    <a href="/attachments/{{id}}?download=1" class="btn btn-secondary">
+                        ⬇️ Download
+                    </a>
+                    <a href="/tables/attachments/{{id}}/edit" class="btn btn-success">
+                        ✏️ Edit
+                    </a>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+        {{else}}
+        <div class="empty-state">
+            <div class="empty-state-icon">📎</div>
+            <h2>No Attachments Found</h2>
+            <p>Create attachment records via the API or upload files to get started.</p>
+        </div>
+        {{/if}}
+    </div>
+    
+    {{> footer}}
+</body>
+</html>

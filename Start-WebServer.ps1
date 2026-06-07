@@ -27,12 +27,13 @@ $ErrorActionPreference = "Stop"
 Add-Type -AssemblyName System.Security
 
 # ─── Paths ────────────────────────────────────────────────────────────────────
-$ScriptRoot   = $PSScriptRoot
-$DataDir      = Join-Path $ScriptRoot "data"
-$TemplatesDir = Join-Path $ScriptRoot "templates"
-$StaticDir    = Join-Path $ScriptRoot "static"
+$ScriptRoot     = $PSScriptRoot
+$DataDir        = Join-Path $ScriptRoot "data"
+$TemplatesDir   = Join-Path $ScriptRoot "templates"
+$StaticDir      = Join-Path $ScriptRoot "static"
+$AttachmentsDir = Join-Path $ScriptRoot "attachments"
 
-foreach ($dir in @($DataDir, $TemplatesDir, $StaticDir)) {
+foreach ($dir in @($DataDir, $TemplatesDir, $StaticDir, $AttachmentsDir)) {
     if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir | Out-Null }
 }
 
@@ -62,6 +63,21 @@ $MimeTypes = @{
     ".txt"  = "text/plain; charset=utf-8"
     ".woff" = "font/woff"
     ".woff2"= "font/woff2"
+    ".pdf"  = "application/pdf"
+    ".doc"  = "application/msword"
+    ".docx" = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ".xls"  = "application/vnd.ms-excel"
+    ".xlsx" = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    ".ppt"  = "application/vnd.ms-powerpoint"
+    ".pptx" = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+    ".zip"  = "application/zip"
+    ".rar"  = "application/x-rar-compressed"
+    ".7z"   = "application/x-7z-compressed"
+    ".mp3"  = "audio/mpeg"
+    ".mp4"  = "video/mp4"
+    ".avi"  = "video/x-msvideo"
+    ".webp" = "image/webp"
+    ".bmp"  = "image/bmp"
 }
 
 function Get-MimeType([string]$ext) {
@@ -505,6 +521,110 @@ function Parse-FormBody([string]$Body) {
     return $ht
 }
 
+function Parse-MultipartFormData {
+    param(
+        [System.Net.HttpListenerRequest]$Request
+    )
+    
+    $contentType = $Request.ContentType
+    if (-not $contentType -or -not $contentType.StartsWith("multipart/form-data")) {
+        throw "Invalid content type for multipart data"
+    }
+    
+    # Extract boundary from Content-Type header
+    $boundary = "--" + ($contentType -split "boundary=")[-1].Trim()
+    
+    # Read raw bytes
+    $ms = New-Object System.IO.MemoryStream
+    $Request.InputStream.CopyTo($ms)
+    $bytes = $ms.ToArray()
+    $ms.Close()
+    
+    # Convert to string for parsing
+    $encoding = [System.Text.Encoding]::UTF8
+    $content = $encoding.GetString($bytes)
+    
+    # Split by boundary
+    $parts = $content -split [regex]::Escape($boundary)
+    
+    $result = @{
+        fields = @{}
+        files = @()
+    }
+    
+    foreach ($part in $parts) {
+        if ([string]::IsNullOrWhiteSpace($part) -or $part.Trim() -eq "--") { continue }
+        
+        # Split headers from content
+        $sections = $part -split "\r\n\r\n", 2
+        if ($sections.Count -lt 2) { continue }
+        
+        $headers = $sections[0]
+        $body = $sections[1].TrimEnd("`r`n")
+        
+        # Parse Content-Disposition header
+        if ($headers -match 'Content-Disposition:\s*form-data;\s*name="([^"]+)"(?:;\s*filename="([^"]+)")?') {
+            $fieldName = $Matches[1]
+            $fileName = if ($Matches.Count -gt 2) { $Matches[2] } else { $null }
+            
+            if ($fileName) {
+                # This is a file upload
+                $contentTypeMatch = $headers -match 'Content-Type:\s*([^\r\n]+)'
+                $fileContentType = if ($contentTypeMatch) { $Matches[1].Trim() } else { "application/octet-stream" }
+                
+                # Extract binary content (find where body actually starts in bytes)
+                $headerBytes = $encoding.GetBytes($sections[0] + "`r`n`r`n")
+                $startPos = 0
+                for ($i = 0; $i -lt $bytes.Length - $headerBytes.Length; $i++) {
+                    $match = $true
+                    for ($j = 0; $j -lt $headerBytes.Length; $j++) {
+                        if ($bytes[$i + $j] -ne $headerBytes[$j]) {
+                            $match = $false
+                            break
+                        }
+                    }
+                    if ($match) {
+                        $startPos = $i + $headerBytes.Length
+                        break
+                    }
+                }
+                
+                # Find the end of this part (next boundary)
+                $endPos = $bytes.Length
+                $boundaryBytes = $encoding.GetBytes("`r`n$boundary")
+                for ($i = $startPos; $i -lt $bytes.Length - $boundaryBytes.Length; $i++) {
+                    $match = $true
+                    for ($j = 0; $j -lt $boundaryBytes.Length; $j++) {
+                        if ($bytes[$i + $j] -ne $boundaryBytes[$j]) {
+                            $match = $false
+                            break
+                        }
+                    }
+                    if ($match) {
+                        $endPos = $i
+                        break
+                    }
+                }
+                
+                $fileBytes = $bytes[$startPos..($endPos - 1)]
+                
+                $result.files += @{
+                    fieldName   = $fieldName
+                    fileName    = $fileName
+                    contentType = $fileContentType
+                    data        = $fileBytes
+                    size        = $fileBytes.Length
+                }
+            } else {
+                # Regular form field
+                $result.fields[$fieldName] = $body
+            }
+        }
+    }
+    
+    return $result
+}
+
 # ─── Router ───────────────────────────────────────────────────────────────────
 function Invoke-Router {
     param(
@@ -530,6 +650,65 @@ function Invoke-Router {
             } else {
                 Send-Error $Response 404 "Static file not found: $rawUrl"
             }
+            return
+        }
+
+        # ── Attachments: /attachments/{id}[?download=1] ───────────────────────
+        if ($rawUrl -match '^/attachments/(\d+)$') {
+            $attachmentId = [int]$Matches[1]
+            
+            # Read attachments metadata from JSON
+            $attachments = @(Read-Table "attachments")
+            $attachment = $attachments | Where-Object { $_.id -eq $attachmentId } | Select-Object -First 1
+            
+            if ($null -eq $attachment) {
+                Send-Error $Response 404 "Attachment not found: ID $attachmentId"
+                return
+            }
+            
+            # Get the decrypted file name (already decrypted by Read-Table)
+            $fileName = $attachment.file_name
+            if ([string]::IsNullOrWhiteSpace($fileName)) {
+                Send-Error $Response 500 "Attachment has no file name"
+                return
+            }
+            
+            # Build full path to attachment file
+            $filePath = Join-Path $AttachmentsDir $fileName
+            if (-not (Test-Path $filePath -PathType Leaf)) {
+                Send-Error $Response 404 "Attachment file not found on disk: $fileName"
+                return
+            }
+            
+            # Read file content
+            $bytes = [System.IO.File]::ReadAllBytes($filePath)
+            
+            # Determine content type from attachment metadata or file extension
+            $contentType = "application/octet-stream"
+            if (-not [string]::IsNullOrWhiteSpace($attachment.content_type)) {
+                $contentType = $attachment.content_type
+            } else {
+                $ext = [System.IO.Path]::GetExtension($fileName).ToLower()
+                $contentType = Get-MimeType $ext
+            }
+            
+            # Check if download parameter is present
+            $forceDownload = $Request.QueryString["download"]
+            
+            # Set content disposition header
+            if ($forceDownload) {
+                $Response.AddHeader("Content-Disposition", "attachment; filename=`"$fileName`"")
+            } else {
+                # Try to display inline if possible (images, PDFs, text, etc.)
+                if ($contentType -match '^(image/|text/|application/pdf)') {
+                    $Response.AddHeader("Content-Disposition", "inline; filename=`"$fileName`"")
+                } else {
+                    $Response.AddHeader("Content-Disposition", "attachment; filename=`"$fileName`"")
+                }
+            }
+            
+            Send-Response -Response $Response -ContentType $contentType -BodyBytes $bytes
+            Write-Log "OK" "Served attachment #$attachmentId : $fileName"
             return
         }
 
@@ -656,6 +835,47 @@ function Handle-PageRoute {
             return
         }
 
+        "^/attachments$" {
+            # Attachments list and viewer
+            $attachments = @(Read-Table "attachments")
+            
+            # Add type indicators for icons
+            $enriched = @()
+            foreach ($att in $attachments) {
+                $type = if ($att.content_type) { $att.content_type.ToLower() } else { "" }
+                $obj = @{
+                    id           = $att.id
+                    file_name    = $att.file_name
+                    content_type = $att.content_type
+                    parent       = $att.parent
+                    creator      = $att.creator
+                    createdAt    = $att.createdAt
+                    updatedAt    = $att.updatedAt
+                    isImage      = ($type -match '^image/')
+                    isPdf        = ($type -eq 'application/pdf')
+                    isDoc        = ($type -match 'word|excel|powerpoint|msword|ms-excel')
+                    isArchive    = ($type -match 'zip|rar|7z|compressed')
+                    isVideo      = ($type -match '^video/')
+                    isAudio      = ($type -match '^audio/')
+                    isOther      = $true
+                }
+                # Set only one icon flag to true
+                if ($obj.isImage -or $obj.isPdf -or $obj.isDoc -or $obj.isArchive -or $obj.isVideo -or $obj.isAudio) {
+                    $obj.isOther = $false
+                }
+                $enriched += $obj
+            }
+            
+            $html = Invoke-Template "attachments_view.html" @{
+                title           = "Attachments"
+                attachments     = $enriched
+                hasAttachments  = ($attachments.Count -gt 0)
+                count           = $attachments.Count
+            }
+            Send-Html $Response 200 $html
+            return
+        }
+
         "^/tables/([a-zA-Z0-9_]+)$" {
             $table = $Matches[1]
             if ($Method -eq "POST") {
@@ -675,11 +895,34 @@ function Handle-PageRoute {
             if ($rows.Count -gt 0) {
                 $cols = $rows[0].PSObject.Properties.Name
             }
+            
+            # Get all attachments for this table to show counts
+            $allAttachments = @()
+            try {
+                $allAttachments = @(Read-Table "attachments")
+            } catch {
+                # Attachments table doesn't exist yet, that's OK
+            }
+            
             $rowMaps = @()
             foreach ($r in $rows) {
                 $cells = @()
                 foreach ($c in $cols) { $cells += [string]$r.$c }
-                $rowMaps += @{ id = [string]$r.id; cells = $cells }
+                
+                # Count attachments for this row
+                $attachmentCount = 0
+                foreach ($att in $allAttachments) {
+                    if ($att.parent -eq [string]$r.id) {
+                        $attachmentCount++
+                    }
+                }
+                
+                $rowMaps += @{ 
+                    id = [string]$r.id
+                    cells = $cells
+                    attachmentCount = $attachmentCount
+                    hasAttachments = ($attachmentCount -gt 0)
+                }
             }
             $html = Invoke-Template "table_view.html" @{
                 title   = "Table: $table"
@@ -788,6 +1031,73 @@ function Handle-PageRoute {
             }
             Send-Html $Response 200 $html
             return
+        }
+
+        "^/tables/([a-zA-Z0-9_]+)/([0-9]+)/attach$" {
+            # File upload endpoint
+            $table = $Matches[1]
+            $parentId = [int]$Matches[2]
+            
+            if ($Method -ne "POST") {
+                Send-Error $Response 405 "Method not allowed"
+                return
+            }
+            
+            try {
+                $multipart = Parse-MultipartFormData $Request
+                
+                if ($multipart.files.Count -eq 0) {
+                    Send-Error $Response 400 "No file uploaded"
+                    return
+                }
+                
+                $uploadedFile = $multipart.files[0]
+                $fileName = $uploadedFile.fileName
+                $fileBytes = $uploadedFile.data
+                $contentType = $uploadedFile.contentType
+                
+                # Get creator from form field if provided
+                $creator = if ($multipart.fields.ContainsKey("creator")) { $multipart.fields["creator"] } else { "" }
+                
+                # Generate unique filename if exists
+                $destPath = Join-Path $AttachmentsDir $fileName
+                if (Test-Path $destPath) {
+                    $baseName = [System.IO.Path]::GetFileNameWithoutExtension($fileName)
+                    $extension = [System.IO.Path]::GetExtension($fileName)
+                    $counter = 1
+                    do {
+                        $fileName = "${baseName}_${counter}${extension}"
+                        $destPath = Join-Path $AttachmentsDir $fileName
+                        $counter++
+                    } while (Test-Path $destPath)
+                }
+                
+                # Save file
+                [System.IO.File]::WriteAllBytes($destPath, $fileBytes)
+                Write-Log "OK" "Saved uploaded file: $fileName ($($fileBytes.Length) bytes)"
+                
+                # Create attachment record
+                $attachmentFields = @{
+                    file_name    = $fileName
+                    content_type = $contentType
+                    parent       = [string]$parentId
+                    creator      = $creator
+                    content      = ""
+                }
+                
+                $newAttachment = New-Row "attachments" $attachmentFields
+                Write-Log "OK" "Created attachment record #$($newAttachment.id) linked to $table #$parentId"
+                
+                # Redirect back to table view
+                $Response.Redirect("/tables/$table")
+                $Response.Close()
+                return
+                
+            } catch {
+                Write-Log "ERROR" "File upload failed: $($_.Exception.Message)"
+                Send-Error $Response 500 "Upload failed: $($_.Exception.Message)"
+                return
+            }
         }
 
         "^/create-table$" {
