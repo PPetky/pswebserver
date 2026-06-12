@@ -4,7 +4,7 @@
   <div>
     <div class="text-muted" style="font-size:.8rem;margin-bottom:.25rem">
       <a href="/tables">Tables</a> /
-      <a href="/tables/{{table}}">{{table}}</a> /
+      <a href="/tables/{{table}}">{{table}}</a>{{#if id}} / {{id}}{{/if}}
     </div>
     <h1>{{action}} Record</h1>
   </div>
@@ -35,6 +35,12 @@
         </button>
       {{/if}}
 
+      <div style="display:flex;gap:.75rem;margin-top:1.5rem">
+        <button type="submit" class="btn btn-primary">💾 {{action}}</button>
+        <a href="/tables/{{table}}" class="btn btn-ghost">Cancel</a>
+      </div>
+    </form>
+
   {{else}}
     <form method="POST" action="/tables/{{table}}/{{id}}/edit">
 
@@ -46,13 +52,13 @@
         </div>
       {{/each}}
 
-  {{/if}}
+      <div style="display:flex;gap:.75rem;margin-top:1.5rem">
+        <button type="submit" class="btn btn-primary">💾 {{action}}</button>
+        <a href="/tables/{{table}}" class="btn btn-ghost">Cancel</a>
+      </div>
+    </form>
 
-    <div style="display:flex;gap:.75rem;margin-top:1.5rem">
-      <button type="submit" class="btn btn-primary">💾 {{action}}</button>
-      <a href="/tables/{{table}}" class="btn btn-ghost">Cancel</a>
-    </div>
-  </form>
+  {{/if}}
 </div>
 
 {{#if isNew}}

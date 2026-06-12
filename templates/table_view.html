@@ -36,7 +36,7 @@
             {{/each}}
             <td style="text-align:right;white-space:nowrap">
               {{#if hasAttachments}}
-                <a href="/attachments?parent={{id}}" class="badge badge-blue" style="margin-right:0.5rem;text-decoration:none" title="View {{attachmentCount}} attachment(s)">
+                <a href="/attachments?table={{table}}&parent={{id}}" class="badge badge-blue" style="margin-right:0.5rem;text-decoration:none" title="View {{attachmentCount}} attachment(s)">
                   📎 {{attachmentCount}}
                 </a>
               {{/if}}
@@ -70,7 +70,7 @@
                 {{#if hasAttachments}}
                 <div style="margin-top:0.75rem;padding:0.5rem;background:var(--surface);border-radius:4px;font-size:0.85rem">
                   💡 This record has {{attachmentCount}} existing attachment(s). 
-                  <a href="/attachments?parent={{id}}" style="color:var(--accent)">View attachments →</a>
+                  <a href="/attachments?table={{table}}&parent={{id}}" style="color:var(--accent)">View attachments →</a>
                 </div>
                 {{/if}}
                 <input type="hidden" name="creator" value="">

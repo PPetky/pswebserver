@@ -839,13 +839,17 @@ function Handle-PageRoute {
             # Attachments list and viewer
             $attachments = @(Read-Table "attachments")
             
-            # Filter by parent if specified
+            # Filter by table and/or parent if specified
+            $tableFilter = $Request.QueryString["table"]
             $parentFilter = $Request.QueryString["parent"]
             $isFiltered = $false
-            if (-not [string]::IsNullOrWhiteSpace($parentFilter)) {
+            
+            if (-not [string]::IsNullOrWhiteSpace($tableFilter) -or -not [string]::IsNullOrWhiteSpace($parentFilter)) {
                 $filtered = @()
                 foreach ($att in $attachments) {
-                    if ($att.parent -eq $parentFilter) {
+                    $matchTable = [string]::IsNullOrWhiteSpace($tableFilter) -or ($att.content -eq $tableFilter)
+                    $matchParent = [string]::IsNullOrWhiteSpace($parentFilter) -or ($att.parent -eq $parentFilter)
+                    if ($matchTable -and $matchParent) {
                         $filtered += $att
                     }
                 }
@@ -881,13 +885,25 @@ function Handle-PageRoute {
                 $enriched += $obj
             }
             
-            $pageTitle = if ($isFiltered) { "Attachments for Record #$parentFilter" } else { "Attachments" }
+            # Build page title based on filters
+            $pageTitle = "Attachments"
+            if ($isFiltered) {
+                if (-not [string]::IsNullOrWhiteSpace($tableFilter) -and -not [string]::IsNullOrWhiteSpace($parentFilter)) {
+                    $pageTitle = "Attachments for $tableFilter #$parentFilter"
+                } elseif (-not [string]::IsNullOrWhiteSpace($tableFilter)) {
+                    $pageTitle = "Attachments for Table: $tableFilter"
+                } elseif (-not [string]::IsNullOrWhiteSpace($parentFilter)) {
+                    $pageTitle = "Attachments for Record #$parentFilter"
+                }
+            }
+            
             $html = Invoke-Template "attachments_view.html" @{
                 title           = $pageTitle
                 attachments     = $enriched
                 hasAttachments  = ($attachments.Count -gt 0)
                 count           = $attachments.Count
                 isFiltered      = $isFiltered
+                tableFilter     = $tableFilter
                 parentFilter    = $parentFilter
             }
             Send-Html $Response 200 $html
@@ -927,16 +943,17 @@ function Handle-PageRoute {
                 $cells = @()
                 foreach ($c in $cols) { $cells += [string]$r.$c }
                 
-                # Count attachments for this row
+                # Count attachments for this row (must match both table and parent)
                 $attachmentCount = 0
                 foreach ($att in $allAttachments) {
-                    if ($att.parent -eq [string]$r.id) {
+                    if ($att.parent -eq [string]$r.id -and $att.content -eq $table) {
                         $attachmentCount++
                     }
                 }
                 
                 $rowMaps += @{ 
                     id = [string]$r.id
+                    table = $table
                     cells = $cells
                     attachmentCount = $attachmentCount
                     hasAttachments = ($attachmentCount -gt 0)

@@ -9,7 +9,25 @@ A complete attachment management system has been implemented for the PowerShell 
 ✅ **Encrypted file names** - Uses Windows DPAPI for secure storage  
 ✅ **Content-type detection** - Automatic MIME type handling  
 ✅ **REST API integration** - Full CRUD operations via `/api/attachments`  
-✅ **Web UI** - Browse and manage attachments at `/attachments`
+✅ **Web UI** - Browse and manage attachments at `/attachments`  
+✅ **Table-aware filtering** - Properly filters attachments by table name (content field)
+
+---
+
+## Recent Bug Fix (2026-06-12)
+
+### Issue: Attachments Not Filtered by Table Name
+**Problem**: The `content` field (which stores the table name) was not being used for filtering. This meant:
+- Attachments were only filtered by record ID (`parent` field)
+- Records with the same ID in different tables would show each other's attachments
+- Example: Record #1 in "carthoteca" and record #1 in "users" would show all attachments where parent=1
+
+**Solution**: 
+1. Updated `/attachments` route to filter by both `table` and `parent` query parameters
+2. Modified attachment count logic in table views to check both `content` (table) and `parent` fields
+3. Updated all attachment links to include `?table={tableName}&parent={recordId}`
+
+**Testing**: Run `.\Test-AttachmentsFilter.ps1` to verify proper filtering
 
 ---
 
