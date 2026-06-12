@@ -857,25 +857,26 @@ function Handle-PageRoute {
             $enriched = @()
             foreach ($att in $attachments) {
                 $type = if ($att.content_type) { $att.content_type.ToLower() } else { "" }
+                
+                # Determine icon emoji based on type
+                $icon = "📎"  # default
+                if ($type -match '^image/') { $icon = "🖼️" }
+                elseif ($type -eq 'application/pdf') { $icon = "📄" }
+                elseif ($type -match 'word|excel|powerpoint|msword|ms-excel') { $icon = "📝" }
+                elseif ($type -match 'zip|rar|7z|compressed') { $icon = "🗜️" }
+                elseif ($type -match '^video/') { $icon = "🎬" }
+                elseif ($type -match '^audio/') { $icon = "🎵" }
+                
                 $obj = @{
                     id           = $att.id
                     file_name    = $att.file_name
                     content_type = $att.content_type
                     parent       = $att.parent
+                    content      = $att.content
                     creator      = $att.creator
                     createdAt    = $att.createdAt
                     updatedAt    = $att.updatedAt
-                    isImage      = ($type -match '^image/')
-                    isPdf        = ($type -eq 'application/pdf')
-                    isDoc        = ($type -match 'word|excel|powerpoint|msword|ms-excel')
-                    isArchive    = ($type -match 'zip|rar|7z|compressed')
-                    isVideo      = ($type -match '^video/')
-                    isAudio      = ($type -match '^audio/')
-                    isOther      = $true
-                }
-                # Set only one icon flag to true
-                if ($obj.isImage -or $obj.isPdf -or $obj.isDoc -or $obj.isArchive -or $obj.isVideo -or $obj.isAudio) {
-                    $obj.isOther = $false
+                    icon         = $icon
                 }
                 $enriched += $obj
             }
