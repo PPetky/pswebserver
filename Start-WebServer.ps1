@@ -365,7 +365,7 @@ function Render-Template {
                 $pos += 7
             } elseif ($tmpl.Substring($pos).StartsWith('{{else}}') -and $nesting -eq 0 -and $elsePos -eq -1) {
                 $elsePos = $pos
-                $pos += 7
+                $pos += 8
             } else {
                 $pos++
             }
@@ -379,7 +379,7 @@ function Render-Template {
             $falsePart = ""
         } else {
             $truePart = $tmpl.Substring($startPos, $elsePos - $startPos)
-            $falsePart = $tmpl.Substring($elsePos + 7, $endPos - ($elsePos + 7))
+            $falsePart = $tmpl.Substring($elsePos + 8, $endPos - ($elsePos + 8))
         }
         
         # Evaluate condition
@@ -941,7 +941,14 @@ function Handle-PageRoute {
             $rowMaps = @()
             foreach ($r in $rows) {
                 $cells = @()
-                foreach ($c in $cols) { $cells += [string]$r.$c }
+                $fields = @()
+                foreach ($c in $cols) { 
+                    $cells += [string]$r.$c
+                    $fields += @{ 
+                        name = $c
+                        value = [string]$r.$c
+                    }
+                }
                 
                 # Count attachments for this row (must match both table and parent)
                 $attachmentCount = 0
@@ -955,6 +962,7 @@ function Handle-PageRoute {
                     id = [string]$r.id
                     table = $table
                     cells = $cells
+                    fields = $fields
                     attachmentCount = $attachmentCount
                     hasAttachments = ($attachmentCount -gt 0)
                 }

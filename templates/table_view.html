@@ -20,62 +20,109 @@
 {{#if hasRows}}
   <div class="tbl-wrap">
     <table>
-      <thead>
-        <tr>
-          {{#each columns}}
-            <th>{{this}}</th>
-          {{/each}}
-          <th style="text-align:right">Actions</th>
-        </tr>
-      </thead>
       <tbody>
         {{#each rows}}
-          <tr>
-            {{#each cells}}
-              <td>{{this}}</td>
-            {{/each}}
-            <td style="text-align:right;white-space:nowrap">
-              {{#if hasAttachments}}
-                <a href="/attachments?table={{table}}&parent={{id}}" class="badge badge-blue" style="margin-right:0.5rem;text-decoration:none" title="View {{attachmentCount}} attachment(s)">
-                  📎 {{attachmentCount}}
-                </a>
-              {{/if}}
-              <a href="/tables/{{table}}/{{id}}/edit" class="btn btn-ghost btn-sm">✏️ Edit</a>
-              <button onclick="toggleUpload({{id}})" class="btn btn-ghost btn-sm" title="Attach file">📎 Attach</button>
-              <form method="POST" action="/tables/{{table}}"
-                    style="display:inline"
-                    onsubmit="return confirm('Delete row #{{id}}?')">
-                <input type="hidden" name="_action" value="delete" />
-                <input type="hidden" name="id" value="{{id}}" />
-                <button type="submit" class="btn btn-danger btn-sm">🗑 Delete</button>
-              </form>
+          <!-- Record header with ID and actions -->
+          <tr style="background:var(--surface2);border-top:2px solid var(--border)">
+            <td colspan="2" style="padding:0.75rem 1rem">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <strong style="font-size:1rem">Record #{{id}}</strong>
+                
+                <div style="white-space:nowrap">
+                  {{#if hasAttachments}}
+                    <a href="/attachments?table={{table}}&parent={{id}}" 
+                       class="badge badge-blue" 
+                       style="margin-right:0.5rem;text-decoration:none" 
+                       title="View {{attachmentCount}} attachment(s)">
+                      📎 {{attachmentCount}}
+                    </a>
+                  {{/if}}
+                  
+                  <a href="/tables/{{table}}/{{id}}/edit" 
+                     class="btn btn-ghost btn-sm">
+                    ✏️ Edit
+                  </a>
+                  
+                  <button onclick="toggleUpload({{id}})" 
+                          class="btn btn-ghost btn-sm" 
+                          title="Attach file">
+                    📎 Attach
+                  </button>
+                  
+                  <form method="POST" 
+                        action="/tables/{{table}}"
+                        style="display:inline"
+                        onsubmit="return confirm('Delete row #{{id}}?')">
+                    <input type="hidden" name="_action" value="delete" />
+                    <input type="hidden" name="id" value="{{id}}" />
+                    <button type="submit" class="btn btn-danger btn-sm">
+                      🗑 Delete
+                    </button>
+                  </form>
+                </div>
+              </div>
             </td>
           </tr>
+          
+          <!-- Data rows: field labels and values -->
+          {{#each fields}}
+            <tr>
+              <td style="width:200px;font-weight:500;padding:0.75rem 1rem;background:var(--surface);vertical-align:top">
+                {{name}}
+              </td>
+              <td style="padding:0.75rem 1rem;vertical-align:top;word-break:break-word">{{#if value}}{{value}}{{else}}<span style="color:var(--text-muted);font-style:italic">—</span>{{/if}}</td>
+            </tr>
+          {{/each}}
+          
+          <!-- Upload form row (hidden by default) -->
           <tr id="upload-row-{{id}}" style="display:none">
             <td colspan="100%" style="background:var(--surface2);padding:1rem">
-              <form method="POST" action="/tables/{{table}}/{{id}}/attach" enctype="multipart/form-data" style="max-width:600px">
+              <form method="POST" 
+                    action="/tables/{{table}}/{{id}}/attach" 
+                    enctype="multipart/form-data" 
+                    style="max-width:600px">
+                
                 <div style="display:flex;gap:1rem;align-items:end">
                   <div style="flex:1">
                     <label style="display:block;margin-bottom:0.5rem;font-weight:500">
                       📎 Upload File for Record #{{id}}
                     </label>
-                    <input type="file" name="file" required 
+                    <input type="file" 
+                           name="file" 
+                           required 
                            style="width:100%;padding:0.5rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text)">
                   </div>
+                  
                   <div>
-                    <button type="submit" class="btn btn-success">⬆️ Upload</button>
-                    <button type="button" onclick="toggleUpload({{id}})" class="btn btn-ghost">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                      ⬆️ Upload
+                    </button>
+                    <button type="button" 
+                            onclick="toggleUpload({{id}})" 
+                            class="btn btn-ghost">
+                      Cancel
+                    </button>
                   </div>
                 </div>
+                
                 {{#if hasAttachments}}
-                <div style="margin-top:0.75rem;padding:0.5rem;background:var(--surface);border-radius:4px;font-size:0.85rem">
-                  💡 This record has {{attachmentCount}} existing attachment(s). 
-                  <a href="/attachments?table={{table}}&parent={{id}}" style="color:var(--accent)">View attachments →</a>
-                </div>
+                  <div style="margin-top:0.75rem;padding:0.5rem;background:var(--surface);border-radius:4px;font-size:0.85rem">
+                    💡 This record has {{attachmentCount}} existing attachment(s). 
+                    <a href="/attachments?table={{table}}&parent={{id}}" 
+                       style="color:var(--accent)">
+                      View attachments →
+                    </a>
+                  </div>
                 {{/if}}
+                
                 <input type="hidden" name="creator" value="">
               </form>
             </td>
+          </tr>
+          
+          <!-- Spacing between records -->
+          <tr style="height:1rem">
+            <td colspan="2" style="background:transparent;border:none"></td>
           </tr>
         {{/each}}
       </tbody>
