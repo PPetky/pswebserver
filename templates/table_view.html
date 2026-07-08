@@ -13,17 +13,42 @@
 </div>
 
 <div class="flex gap-2 mb-4" style="align-items:center">
-  <span class="badge badge-blue">{{rowCount}} rows</span>
+  <span class="badge badge-blue"><span id="visibleCount">{{rowCount}}</span> rows</span>
   <span class="text-muted" style="font-size:.8rem">API: <code>/api/{{table}}</code></span>
 </div>
 
 {{#if hasRows}}
+  <!-- Search and Pagination Controls -->
+  <div class="mb-4" style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
+    <div style="flex:1;min-width:250px">
+      <input type="text" 
+             id="searchInput" 
+             placeholder="🔍 Search records..." 
+             style="width:100%;padding:0.5rem 1rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text)"
+             oninput="filterRecords()">
+    </div>
+    <div style="display:flex;gap:0.5rem;align-items:center">
+      <label style="font-size:0.9rem;color:var(--text-muted)">Per page:</label>
+      <select id="itemsPerPage" 
+              onchange="updatePagination()" 
+              style="padding:0.5rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text)">
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+        <option value="all">All</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Pagination Info -->
+  <div id="paginationInfo" class="mb-3" style="font-size:0.9rem;color:var(--text-muted)"></div>
   <div class="tbl-wrap">
     <table>
-      <tbody>
+      <tbody id="recordsTableBody">
         {{#each rows}}
           <!-- Record header with ID and actions -->
-          <tr style="background:var(--surface2);border-top:2px solid var(--border)">
+          <tr class="record-group" data-record-id="{{id}}" style="background:var(--surface2);border-top:2px solid var(--border)">
             <td colspan="2" style="padding:0.75rem 1rem">
               <div style="display:flex;justify-content:space-between;align-items:center">
                 <strong style="font-size:1rem">Record #{{id}}</strong>
@@ -66,16 +91,16 @@
           
           <!-- Data rows: field labels and values -->
           {{#each fields}}
-            <tr>
+            <tr class="record-group" data-record-id="{{../id}}">
               <td style="width:200px;font-weight:500;padding:0.75rem 1rem;background:var(--surface);vertical-align:top">
                 {{name}}
               </td>
-              <td style="padding:0.75rem 1rem;vertical-align:top;word-break:break-word">{{#if value}}{{value}}{{else}}<span style="color:var(--text-muted);font-style:italic">—</span>{{/if}}</td>
+              <td class="record-data" style="padding:0.75rem 1rem;vertical-align:top;word-break:break-word">{{#if value}}{{value}}{{else}}<span style="color:var(--text-muted);font-style:italic">—</span>{{/if}}</td>
             </tr>
           {{/each}}
           
           <!-- Upload form row (hidden by default) -->
-          <tr id="upload-row-{{id}}" style="display:none">
+          <tr id="upload-row-{{id}}" class="record-group" data-record-id="{{id}}" style="display:none">
             <td colspan="100%" style="background:var(--surface2);padding:1rem">
               <form method="POST" 
                     action="/tables/{{table}}/{{id}}/attach" 
@@ -121,13 +146,16 @@
           </tr>
           
           <!-- Spacing between records -->
-          <tr style="height:1rem">
+          <tr class="record-group" data-record-id="{{id}}" style="height:1rem">
             <td colspan="2" style="background:transparent;border:none"></td>
           </tr>
         {{/each}}
       </tbody>
     </table>
   </div>
+
+  <!-- Pagination Controls -->
+  <div id="paginationControls" class="mt-4" style="display:flex;justify-content:center;align-items:center;gap:0.5rem;flex-wrap:wrap"></div>
 {{else}}
   <div class="empty">
     <div class="empty-icon">📭</div>
@@ -137,6 +165,7 @@
 {{/if}}
 
 <script>
+// Upload form toggle
 function toggleUpload(id) {
   const row = document.getElementById('upload-row-' + id);
   if (row.style.display === 'none') {
@@ -144,6 +173,193 @@ function toggleUpload(id) {
   } else {
     row.style.display = 'none';
   }
+}
+
+// Pagination and search state
+let currentPage = 1;
+let filteredRecords = [];
+let allRecords = [];
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+  // Get all unique record IDs
+  const recordElements = document.querySelectorAll('[data-record-id]');
+  const recordIds = new Set();
+  recordElements.forEach(el => {
+    recordIds.add(el.getAttribute('data-record-id'));
+  });
+  allRecords = Array.from(recordIds);
+  filteredRecords = [...allRecords];
+  
+  updatePagination();
+});
+
+// Filter records based on search input
+function filterRecords() {
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+  
+  if (!searchTerm) {
+    // Show all records
+    filteredRecords = [...allRecords];
+  } else {
+    // Filter records that contain the search term in any data cell
+    filteredRecords = allRecords.filter(recordId => {
+      const recordRows = document.querySelectorAll(`[data-record-id="${recordId}"]`);
+      let recordText = '';
+      
+      recordRows.forEach(row => {
+        const dataCells = row.querySelectorAll('.record-data, strong');
+        dataCells.forEach(cell => {
+          recordText += cell.textContent.toLowerCase() + ' ';
+        });
+      });
+      
+      return recordText.includes(searchTerm);
+    });
+  }
+  
+  // Update visible count
+  document.getElementById('visibleCount').textContent = filteredRecords.length;
+  
+  // Reset to first page
+  currentPage = 1;
+  updatePagination();
+}
+
+// Update pagination and display
+function updatePagination() {
+  const itemsPerPageSelect = document.getElementById('itemsPerPage');
+  const itemsPerPage = itemsPerPageSelect.value === 'all' ? filteredRecords.length : parseInt(itemsPerPageSelect.value);
+  
+  const totalPages = Math.ceil(filteredRecords.length / itemsPerPage);
+  
+  // Ensure current page is valid
+  if (currentPage > totalPages) {
+    currentPage = Math.max(1, totalPages);
+  }
+  
+  // Calculate start and end indices
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, filteredRecords.length);
+  
+  // Hide all records first
+  allRecords.forEach(recordId => {
+    const recordRows = document.querySelectorAll(`[data-record-id="${recordId}"]`);
+    recordRows.forEach(row => {
+      // Don't hide upload rows that are already hidden
+      if (row.id && row.id.startsWith('upload-row-')) {
+        if (row.style.display !== 'table-row') {
+          return;
+        }
+      }
+      row.style.display = 'none';
+    });
+  });
+  
+  // Show only records for current page
+  const recordsToShow = filteredRecords.slice(startIndex, endIndex);
+  recordsToShow.forEach(recordId => {
+    const recordRows = document.querySelectorAll(`[data-record-id="${recordId}"]`);
+    recordRows.forEach(row => {
+      // Don't show upload rows unless they were explicitly opened
+      if (row.id && row.id.startsWith('upload-row-')) {
+        return;
+      }
+      row.style.display = '';
+    });
+  });
+  
+  // Update pagination info
+  if (filteredRecords.length > 0) {
+    document.getElementById('paginationInfo').innerHTML = 
+      `Showing ${startIndex + 1}-${endIndex} of ${filteredRecords.length} records`;
+  } else {
+    document.getElementById('paginationInfo').innerHTML = 'No records found';
+  }
+  
+  // Render pagination controls
+  renderPaginationControls(totalPages);
+}
+
+// Render pagination buttons
+function renderPaginationControls(totalPages) {
+  const container = document.getElementById('paginationControls');
+  
+  if (totalPages <= 1 && document.getElementById('itemsPerPage').value === 'all') {
+    container.innerHTML = '';
+    return;
+  }
+  
+  let html = '';
+  
+  // Previous button
+  html += `<button onclick="goToPage(${currentPage - 1})" 
+                   ${currentPage === 1 ? 'disabled' : ''} 
+                   class="btn btn-ghost btn-sm" 
+                   style="${currentPage === 1 ? 'opacity:0.5;cursor:not-allowed' : ''}">
+            ← Previous
+          </button>`;
+  
+  // Page numbers
+  const maxButtons = 7;
+  let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+  let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+  
+  if (endPage - startPage < maxButtons - 1) {
+    startPage = Math.max(1, endPage - maxButtons + 1);
+  }
+  
+  // First page + ellipsis
+  if (startPage > 1) {
+    html += `<button onclick="goToPage(1)" class="btn btn-ghost btn-sm">1</button>`;
+    if (startPage > 2) {
+      html += `<span style="color:var(--text-muted)">...</span>`;
+    }
+  }
+  
+  // Page buttons
+  for (let i = startPage; i <= endPage; i++) {
+    const isActive = i === currentPage;
+    html += `<button onclick="goToPage(${i})" 
+                     class="btn ${isActive ? 'btn-primary' : 'btn-ghost'} btn-sm"
+                     style="${isActive ? 'font-weight:bold' : ''}">
+              ${i}
+            </button>`;
+  }
+  
+  // Ellipsis + last page
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) {
+      html += `<span style="color:var(--text-muted)">...</span>`;
+    }
+    html += `<button onclick="goToPage(${totalPages})" class="btn btn-ghost btn-sm">${totalPages}</button>`;
+  }
+  
+  // Next button
+  html += `<button onclick="goToPage(${currentPage + 1})" 
+                   ${currentPage === totalPages ? 'disabled' : ''} 
+                   class="btn btn-ghost btn-sm"
+                   style="${currentPage === totalPages ? 'opacity:0.5;cursor:not-allowed' : ''}">
+            Next →
+          </button>`;
+  
+  container.innerHTML = html;
+}
+
+// Navigate to specific page
+function goToPage(page) {
+  const itemsPerPage = document.getElementById('itemsPerPage').value === 'all' ? 
+                       filteredRecords.length : 
+                       parseInt(document.getElementById('itemsPerPage').value);
+  const totalPages = Math.ceil(filteredRecords.length / itemsPerPage);
+  
+  if (page < 1 || page > totalPages) return;
+  
+  currentPage = page;
+  updatePagination();
+  
+  // Scroll to top of table
+  document.querySelector('.tbl-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 </script>
 
